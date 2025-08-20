@@ -2,11 +2,14 @@
 import { useState } from 'react';
 import PdfUploader from '@/components/PdfUploader';
 import SummaryPanel from '@/components/SummaryPanel';
+import KeywordsPanel from '@/components/KeywordsPanel';
 import { summarizeClient } from '@/lib/summarize-client';
+import { extractKeywords } from '@/lib/keywords';
 
 export default function Page() {
   const [srcText, setSrcText] = useState<string>('');
   const [summary, setSummary] = useState<string>('');
+  const [keywords, setKeywords] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
@@ -17,8 +20,10 @@ export default function Page() {
     try {
       const s = await summarizeClient(srcText);
       setSummary(s);
+      setKeywords(extractKeywords(s));
     } catch (e: any) {
       setError(e?.message || 'Özetleme sırasında hata oluştu.');
+      setKeywords([]);
     } finally {
       setLoading(false);
     }
@@ -48,6 +53,7 @@ export default function Page() {
         </button>
         {error && <p className="text-red-600 text-sm">{error}</p>}
         <SummaryPanel summary={summary} />
+        <KeywordsPanel keywords={keywords} />
       </section>
 
       <footer className="pt-8 text-xs text-gray-500">
