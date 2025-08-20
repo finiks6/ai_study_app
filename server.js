@@ -30,7 +30,7 @@ app.get('/', (req, res) => {
 app.use(authRoutes);
 app.use(summaryRoutes);
 
-const port = process.env.PORT;
+const port = process.env.PORT || 3000;
 if (require.main === module) {
   app.listen(port, () => console.log(`Server listening on port ${port}`));
 }
