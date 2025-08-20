@@ -1,22 +1,85 @@
 const express = require('express');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
+const session = require('express-session');
+const bcrypt = require('bcrypt');
 
 const app = express();
 const db = new sqlite3.Database('data.sqlite');
 
 db.serialize(() => {
-  db.run('CREATE TABLE IF NOT EXISTS summaries (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT, summary TEXT)');
+  db.run('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT)');
+  db.run('CREATE TABLE IF NOT EXISTS summaries (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, text TEXT, summary TEXT, FOREIGN KEY(user_id) REFERENCES users(id))');
 });
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || 'secret',
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 app.use(express.static(path.join(__dirname, 'public')));
+
+function requireAuth(req, res, next) {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  next();
+}
 
 app.get('/', (req, res) => {
   res.render('index', { title: 'AI Study App' });
+});
+
+app.post('/signup', async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Username and password required' });
+  }
+  try {
+    const hashed = await bcrypt.hash(password, 10);
+    db.run('INSERT INTO users (username, password) VALUES (?, ?)', [username, hashed], function (err) {
+      if (err) {
+        return res.status(400).json({ error: 'User already exists' });
+      }
+      res.json({ message: 'User created' });
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Username and password required' });
+  }
+  db.get('SELECT id, password FROM users WHERE username = ?', [username], async (err, user) => {
+    if (err || !user) {
+      return res.status(400).json({ error: 'Invalid credentials' });
+    }
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      return res.status(400).json({ error: 'Invalid credentials' });
+    }
+    req.session.userId = user.id;
+    res.json({ message: 'Logged in' });
+  });
+});
+
+app.post('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ error: 'Logout failed' });
+    }
+    res.json({ message: 'Logged out' });
+  });
 });
 
 async function simpleSummarize(text) {
@@ -71,7 +134,7 @@ async function simpleSummarize(text) {
   return summaries.join(' ');
 }
 
-app.post('/api/summarize', async (req, res) => {
+app.post('/api/summarize', requireAuth, async (req, res) => {
   const { text } = req.body;
   if (!text) {
     return res.status(400).json({ error: 'Text is required' });
@@ -85,7 +148,7 @@ app.post('/api/summarize', async (req, res) => {
     summary = text.split(/\s+/).slice(0, 50).join(' ');
   }
 
-  db.run('INSERT INTO summaries (text, summary) VALUES (?, ?)', [text, summary], function (err) {
+  db.run('INSERT INTO summaries (user_id, text, summary) VALUES (?, ?, ?)', [req.session.userId, text, summary], function (err) {
     if (err) {
       return res.status(500).json({ error: 'Database error' });
     }
@@ -93,8 +156,8 @@ app.post('/api/summarize', async (req, res) => {
   });
 });
 
-app.get('/api/summaries', (req, res) => {
-  db.all('SELECT id, summary FROM summaries ORDER BY id DESC', (err, rows) => {
+app.get('/api/summaries', requireAuth, (req, res) => {
+  db.all('SELECT id, summary FROM summaries WHERE user_id = ? ORDER BY id DESC', [req.session.userId], (err, rows) => {
     if (err) {
       return res.status(500).json({ error: 'Database error' });
     }
@@ -102,9 +165,9 @@ app.get('/api/summaries', (req, res) => {
   });
 });
 
-app.get('/summaries/:id', (req, res) => {
+app.get('/summaries/:id', requireAuth, (req, res) => {
   const { id } = req.params;
-  db.get('SELECT text, summary FROM summaries WHERE id = ?', [id], (err, row) => {
+  db.get('SELECT text, summary FROM summaries WHERE id = ? AND user_id = ?', [id, req.session.userId], (err, row) => {
     if (err) {
       return res.status(500).send('Database error');
     }
