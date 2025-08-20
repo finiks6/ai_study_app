@@ -24,5 +24,4 @@ body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial
 .font-bold { font-weight: 700; }
 .font-semibold { font-weight: 600; }
 .bg-black { background: #000; }
-.rounded { border-radius: 0.5rem; }
 .disabled\:opacity-50:disabled { opacity: .5; cursor: not-allowed; }

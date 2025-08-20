@@ -1,7 +1,3 @@
----
-
-## package.json (örnek)
-```json
 {
   "name": "summarize-free",
   "version": "0.1.0",
