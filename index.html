@@ -7,10 +7,24 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <h1>AI Study App</h1>
-  <input type="file" id="pdf-input" accept="application/pdf" />
-  <button id="summarize-btn">Summarize</button>
-  <pre id="summary"></pre>
+  <h1>AI Study Helper</h1>
+
+  <section class="loader">
+    <input type="file" id="pdf-input" accept="application/pdf" />
+    <button id="summarize-btn">Summarize</button>
+  </section>
+
+  <section class="summary-section">
+    <h2>Summary</h2>
+    <pre id="summary"></pre>
+  </section>
+
+  <section class="qa-section">
+    <h2>Ask a Question</h2>
+    <input type="text" id="question-input" placeholder="Type your question about the PDF" />
+    <button id="ask-btn">Ask</button>
+    <pre id="answer"></pre>
+  </section>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.6.82/pdf.min.js"></script>
   <script type="module" src="script.js"></script>

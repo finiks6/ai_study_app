@@ -12,7 +12,10 @@ async function extractText(file) {
   return text;
 }
 
+let pdfText = '';
+
 const summarizeBtn = document.getElementById('summarize-btn');
+const askBtn = document.getElementById('ask-btn');
 
 summarizeBtn.addEventListener('click', async () => {
   const input = document.getElementById('pdf-input');
@@ -22,8 +25,26 @@ summarizeBtn.addEventListener('click', async () => {
   }
   const summaryEl = document.getElementById('summary');
   summaryEl.textContent = 'Loading...';
-  const text = await extractText(input.files[0]);
+  pdfText = await extractText(input.files[0]);
   const summarizer = await pipeline('summarization', 'Xenova/distilbart-cnn-6-6');
-  const result = await summarizer(text, { max_length: 60 });
+  const result = await summarizer(pdfText, { max_length: 60 });
   summaryEl.textContent = result[0].summary_text;
+});
+
+askBtn.addEventListener('click', async () => {
+  if (!pdfText) {
+    alert('Please load and summarize a PDF first.');
+    return;
+  }
+  const questionInput = document.getElementById('question-input');
+  const question = questionInput.value.trim();
+  if (!question) {
+    alert('Enter a question.');
+    return;
+  }
+  const answerEl = document.getElementById('answer');
+  answerEl.textContent = 'Thinking...';
+  const qa = await pipeline('question-answering', 'Xenova/distilbert-base-cased-distilled-squad');
+  const result = await qa({ question, context: pdfText });
+  answerEl.textContent = result.answer;
 });

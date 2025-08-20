@@ -1,10 +1,10 @@
-# AI Study App Website
+# AI Study Helper Website
 
-Simple static website that extracts text from PDF files and summarizes them in the browser using [pdf.js](https://mozilla.github.io/pdf.js/) and [@xenova/transformers](https://github.com/xenova/transformers.js).
+Simple static site that extracts text from PDF files, summarizes the content and answers questions in the browser using [pdf.js](https://mozilla.github.io/pdf.js/) and [@xenova/transformers](https://github.com/xenova/transformers.js).
 
 ## Usage
 
-Open `index.html` in a modern browser, choose a PDF file and click **Summarize** to generate a short summary of the document.
+Open `index.html` in a modern browser and choose a PDF file. Click **Summarize** to generate a short overview, or type a question about the document and click **Ask** to receive an AI-generated answer.
 
 ## Development
 
