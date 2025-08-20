@@ -24,6 +24,10 @@ app.use(
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
+  res.render('welcome', { title: 'AI Study App' });
+});
+
+app.get('/summarize', (req, res) => {
   res.render('index', { title: 'AI Study App' });
 });
 
