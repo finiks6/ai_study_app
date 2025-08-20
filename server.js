@@ -46,6 +46,19 @@ app.get('/api/summaries', (req, res) => {
   });
 });
 
+app.get('/summaries/:id', (req, res) => {
+  const { id } = req.params;
+  db.get('SELECT text, summary FROM summaries WHERE id = ?', [id], (err, row) => {
+    if (err) {
+      return res.status(500).send('Database error');
+    }
+    if (!row) {
+      return res.status(404).send('Not found');
+    }
+    res.render('summary', { title: 'Summary Detail', text: row.text, summary: row.summary });
+  });
+});
+
 const port = process.env.PORT || 3000;
 if (require.main === module) {
   app.listen(port, () => console.log(`Server listening on port ${port}`));
