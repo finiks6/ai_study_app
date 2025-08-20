@@ -1,5 +1,11 @@
 const request = require('supertest');
+jest.mock('../db', () => {
+  const actual = jest.requireActual('../db');
+  return { ...actual, insertSummary: jest.fn(actual.insertSummary) };
+});
 const app = require('../server');
+const db = require('../db');
+const realDb = jest.requireActual('../db');
 
 describe('Server', () => {
   const agent = request.agent(app);
@@ -42,6 +48,27 @@ describe('Server', () => {
     expect(page.status).toBe(200);
     expect(page.text).toContain('Summary Detail');
     expect(page.text).toContain('Another test document');
+  });
+
+  it('returns 400 if text is missing', async () => {
+    const res = await agent.post('/api/summarize').send({});
+    expect(res.status).toBe(400);
+  });
+
+  it('handles database errors when saving summaries', async () => {
+    db.insertSummary.mockImplementation((userId, text, summary, cb) =>
+      cb(new Error('fail'))
+    );
+    const res = await agent
+      .post('/api/summarize')
+      .send({ text: 'trigger db error' });
+    expect(res.status).toBe(500);
+    db.insertSummary.mockImplementation(realDb.insertSummary);
+  });
+
+  it('returns 404 for invalid summary id', async () => {
+    const res = await agent.get('/summaries/999999');
+    expect(res.status).toBe(404);
   });
 
   it('isolates summaries per user', async () => {
