@@ -1,15 +1,22 @@
 # AI Study Helper Website
 
-Simple static site that extracts text from PDF files, summarizes the content and answers questions in the browser using [pdf.js](https://mozilla.github.io/pdf.js/) and [@xenova/transformers](https://github.com/xenova/transformers.js).
+The project now includes a Node.js backend with a SQLite database. Upload a PDF, the server will generate a basic summary and store it for later viewing.
 
-## Usage
+## Setup
 
-Open `index.html` in a modern browser and choose a PDF file. Click **Summarize** to generate a short overview, or type a question about the document and click **Ask** to receive an AI-generated answer.
-
-## Development
-
-This project runs entirely in the browser, so no build step or server is required. The repository exists only for GitHub pull requests and to keep the code online.
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Start the development server:
+   ```bash
+   npm start
+   ```
+3. Visit [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Testing
 
-No automated tests are configured.
+Run the test suite with:
+```bash
+npm test
+```

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Study App</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
   <h1>AI Study Helper</h1>
@@ -19,14 +19,12 @@
     <pre id="summary"></pre>
   </section>
 
-  <section class="qa-section">
-    <h2>Ask a Question</h2>
-    <input type="text" id="question-input" placeholder="Type your question about the PDF" />
-    <button id="ask-btn">Ask</button>
-    <pre id="answer"></pre>
+  <section class="history-section">
+    <h2>Previous Summaries</h2>
+    <ul id="history"></ul>
   </section>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.6.82/pdf.min.js"></script>
-  <script type="module" src="script.js"></script>
+  <script src="/script.js"></script>
 </body>
 </html>
