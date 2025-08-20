@@ -1,12 +1,25 @@
-# Ücretsiz Ders Özeti (Web MVP)
+# Ücretsiz Ders Özeti
 
-Next.js (App Router) + pdf.js + Transformers.js (tarayıcı-içi özet) iskeleti.
+Basit bir Next.js uygulaması. PDF dosyalarından metin çıkarır ve tarayıcı içinde özetler.
 
-## 1) Kurulum
+## Kurulum
+
 ```bash
-# Node 18+ önerilir
-npx create-next-app@latest summarize-free --ts --app --src-dir --eslint --tailwind=false
-cd summarize-free
-# Bu repo ağacındaki dosyaları / içerikleri projeye kopyala (aynı yollarla)
-npm i pdfjs-dist @xenova/transformers
+npm install
+```
+
+## Geliştirme
+
+```bash
 npm run dev
+```
+
+## Üretim derlemesi
+
+```bash
+npm run build
+```
+
+```bash
+npm start
+```
