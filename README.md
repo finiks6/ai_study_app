@@ -1,25 +1,15 @@
-# Ücretsiz Ders Özeti
+# AI Study App Website
 
-Basit bir Next.js uygulaması. PDF dosyalarından metin çıkarır ve tarayıcı içinde özetler.
+Simple static website that extracts text from PDF files and summarizes them in the browser using [pdf.js](https://mozilla.github.io/pdf.js/) and [@xenova/transformers](https://github.com/xenova/transformers.js).
 
-## Kurulum
+## Usage
 
-```bash
-npm install
-```
+Open `index.html` in a modern browser, choose a PDF file and click **Summarize** to generate a short summary of the document.
 
-## Geliştirme
+## Development
 
-```bash
-npm run dev
-```
+This project runs entirely in the browser, so no build step or server is required. The repository exists only for GitHub pull requests and to keep the code online.
 
-## Üretim derlemesi
+## Testing
 
-```bash
-npm run build
-```
-
-```bash
-npm start
-```
+No automated tests are configured.
