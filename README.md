@@ -8,11 +8,25 @@ The project now includes a Node.js backend with a SQLite database. Upload a PDF,
    ```bash
    npm install
    ```
-2. Start the development server:
+2. Configure environment variables in `.env`:
+   ```bash
+   PORT=3000
+   DB_FILE=data.sqlite
+   SESSION_SECRET=supersecret
+   ```
+3. Start the development server:
    ```bash
    npm start
    ```
-3. Visit [http://localhost:3000](http://localhost:3000) in your browser.
+4. Visit `http://localhost:${PORT}` in your browser.
+
+## Environment Variables
+
+The following variables are required:
+
+- `PORT` – Port number for the HTTP server.
+- `DB_FILE` – Path to the SQLite database file.
+- `SESSION_SECRET` – Secret used to sign the session ID cookie.
 
 ## Testing
 
