@@ -19,7 +19,10 @@ async function loadHistory() {
   list.innerHTML = '';
   data.summaries.forEach(item => {
     const li = document.createElement('li');
-    li.textContent = item.summary;
+    const link = document.createElement('a');
+    link.href = `/summaries/${item.id}`;
+    link.textContent = item.summary;
+    li.appendChild(link);
     list.appendChild(li);
   });
 }

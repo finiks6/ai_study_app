@@ -18,4 +18,15 @@ describe('Server', () => {
     const list = await request(app).get('/api/summaries');
     expect(list.body.summaries.length).toBeGreaterThan(0);
   });
+
+  it('renders a summary detail page', async () => {
+    const res = await request(app)
+      .post('/api/summarize')
+      .send({ text: 'Another test document to view detail page.' });
+    const id = res.body.id;
+    const page = await request(app).get(`/summaries/${id}`);
+    expect(page.status).toBe(200);
+    expect(page.text).toContain('Summary Detail');
+    expect(page.text).toContain('Another test document');
+  });
 });

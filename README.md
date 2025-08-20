@@ -1,6 +1,6 @@
 # AI Study Helper Website
 
-The project now includes a Node.js backend with a SQLite database. Upload a PDF, the server will generate a basic summary and store it for later viewing.
+The project now includes a Node.js backend with a SQLite database. Upload a PDF, the server will generate a basic summary and store it for later viewing. Previously saved summaries can be browsed and clicking a summary shows its full text and generated output.
 
 ## Setup
 
