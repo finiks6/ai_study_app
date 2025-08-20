@@ -4,8 +4,10 @@ import { pipeline, env } from '@xenova/transformers';
 import { chunkByChars } from './chunk';
 
 // Opsiyonel: wasm/WebGPU için cache ve sessiz mod
-env.allowLocalModels = false; // CDN'den indirsin
-env.backends.onnx.wasm.numThreads = 1; // cihazınıza göre artırabilirsiniz
+if (typeof window !== 'undefined') {
+  env.allowLocalModels = false; // CDN'den indirsin
+  env.backends.onnx.wasm.numThreads = 1; // cihazınıza göre artırabilirsiniz
+}
 
 let summarizer: any | null = null;
 
