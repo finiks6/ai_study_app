@@ -9,7 +9,7 @@ body {
 }
 
 h1 {
-  color: #333;
+  color: #4f46e5;
 }
 
 h2 {
@@ -30,7 +30,7 @@ input[type="text"] {
 
 pre {
   white-space: pre-wrap;
-  background: #f4f4f4;
+  background: #f9f5ff;
   padding: 1rem;
   border: 1px solid #ddd;
   margin-top: 1rem;
@@ -44,7 +44,7 @@ pre {
 body.landing {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #4f46e5, #9333ea);
+  background: linear-gradient(135deg, #6366f1, #ec4899);
   color: #fff;
   display: flex;
   flex-direction: column;
@@ -59,14 +59,14 @@ body.landing {
 }
 
 .nav-buttons .nav-btn {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   color: #fff;
   padding: 0.5rem 1rem;
   margin-left: 0.5rem;
   border-radius: 4px;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: background 0.3s, color 0.3s, transform 0.3s, box-shadow 0.3s;
 }
 
 .hero {
@@ -86,12 +86,12 @@ body.landing {
   margin: 0.5rem;
   font-size: 1rem;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: background 0.3s, color 0.3s, transform 0.3s, box-shadow 0.3s;
 }
 
 .hero .primary {
   background: #fff;
-  color: #4f46e5;
+  color: #6366f1;
 }
 
 .hero .placeholder {
@@ -101,8 +101,9 @@ body.landing {
 
 .nav-buttons .nav-btn:hover,
 .hero .btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.25);
+  background: rgba(255, 255, 255, 0.25);
 }
 
 #summary {
