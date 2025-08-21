@@ -114,6 +114,7 @@ document.getElementById('summarize-btn').addEventListener('click', async () => {
   const wikiLink = document.getElementById('wiki-input').value.trim();
   const summaryEl = document.getElementById('summary');
   summaryEl.textContent = 'Loading...';
+  summaryEl.classList.remove('show');
 
   let text = '';
   let images = [];
@@ -159,6 +160,7 @@ document.getElementById('summarize-btn').addEventListener('click', async () => {
   } catch (err) {
     summaryEl.textContent = 'Error';
   }
+  requestAnimationFrame(() => summaryEl.classList.add('show'));
   loadHistory();
 });
 
