@@ -4,27 +4,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title><%= title %></title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <h1>AI Study Helper</h1>
+  <main>
+    <h1>AI Study Helper</h1>
 
-  <section class="loader">
-    <input type="file" id="pdf-input" accept="application/pdf" />
-    <input type="url" id="wiki-input" placeholder="Wikipedia link" />
-    <button id="summarize-btn">Summarize</button>
-  </section>
+    <section class="loader">
+      <input type="file" id="pdf-input" accept="application/pdf" />
+      <input type="url" id="wiki-input" placeholder="Wikipedia link" />
+      <button id="summarize-btn" class="btn">Summarize</button>
+    </section>
 
-  <section class="summary-section">
-    <h2>Summary</h2>
-    <div id="summary"></div>
-  </section>
+    <section class="summary-section">
+      <h2>Summary</h2>
+      <div id="summary"></div>
+    </section>
 
-  <section class="history-section">
-    <h2>Previous Summaries</h2>
-    <ul id="history"></ul>
-  </section>
-
+    <section class="history-section">
+      <h2>Previous Summaries</h2>
+      <ul id="history"></ul>
+    </section>
+  </main>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.6.82/pdf.min.js"></script>
   <script src="/script.js"></script>
 </body>
