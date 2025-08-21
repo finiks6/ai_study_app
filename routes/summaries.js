@@ -15,17 +15,23 @@ async function simpleSummarize(text) {
   const maxChunkSize = 4000; // characters
   const fallback = (str) => str.split(/\s+/).slice(0, 50).join(' ');
 
+  function formatNotes(str) {
+    const sentences = str.split(/(?<=[\.?!])\s+/).filter(Boolean);
+    const bulletPoints = sentences.map((s) => `- ${s.trim()}`);
+    return ['## Summary', ...bulletPoints].join('\n');
+  }
+
   const chunks = [];
   for (let i = 0; i < text.length; i += maxChunkSize) {
     chunks.push(text.slice(i, i + maxChunkSize));
   }
 
+  // If no API key, simply fall back to crude truncation.
   if (!apiKey) {
-    return chunks.map(fallback).join(' ');
+    return formatNotes(chunks.map(fallback).join(' '));
   }
 
-  const summaries = [];
-  for (const chunk of chunks) {
+  async function summarizeChunk(chunk) {
     try {
       const response = await fetch(
         'https://api-inference.huggingface.co/models/facebook/bart-large-cnn',
@@ -45,23 +51,36 @@ async function simpleSummarize(text) {
 
       const data = await response.json();
       if (Array.isArray(data) && data[0] && data[0].summary_text) {
-        summaries.push(data[0].summary_text);
-      } else if (data.error) {
-        throw new Error(data.error);
-      } else {
-        summaries.push(fallback(chunk));
+        return data[0].summary_text;
       }
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      return fallback(chunk);
     } catch (err) {
       console.error('Summarization error:', err.message);
-      summaries.push(fallback(chunk));
+      return fallback(chunk);
     }
   }
 
-  return summaries.join(' ');
+  // Summarize all chunks in parallel for speed.
+  const summaries = await Promise.all(chunks.map(summarizeChunk));
+  let combined = summaries.join(' ');
+
+  // Run a second pass to tighten the final summary if it's still long.
+  if (combined.length > maxChunkSize) {
+    try {
+      combined = await summarizeChunk(combined);
+    } catch {
+      combined = fallback(combined);
+    }
+  }
+
+  return formatNotes(combined);
 }
 
 router.post('/api/summarize', requireAuth, async (req, res) => {
-  const { text } = req.body;
+  const { text, images = [] } = req.body;
   if (!text) {
     return res.status(400).json({ error: 'Text is required' });
   }
@@ -72,6 +91,11 @@ router.post('/api/summarize', requireAuth, async (req, res) => {
   } catch (err) {
     console.error('Summarization failed:', err.message);
     summary = text.split(/\s+/).slice(0, 50).join(' ');
+  }
+
+  if (Array.isArray(images) && images.length) {
+    const imgLines = images.map((img) => `- ${img.caption || 'Image'}\n<img src="${img.url}" alt="${img.caption || ''}" />`);
+    summary = `${summary}\n${imgLines.join('\n')}`;
   }
 
   insertSummary(req.session.userId, text, summary, function (err) {
@@ -100,7 +124,8 @@ router.get('/summaries/:id', requireAuth, (req, res) => {
     if (!row) {
       return res.status(404).send('Not found');
     }
-    res.render('summary', { title: 'Summary Detail', text: row.text, summary: row.summary });
+    const summaryHtml = row.summary.replace(/\n/g, '<br>');
+    res.render('summary', { title: 'Summary Detail', text: row.text, summary: summaryHtml });
   });
 });
 
