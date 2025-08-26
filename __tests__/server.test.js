@@ -21,6 +21,15 @@ describe('Server', () => {
     expect(res.text).toContain('AI Study Helper');
   });
 
+  it('returns current user info', async () => {
+    const res = await agent.get('/me');
+    expect(res.status).toBe(200);
+    expect(res.body.username).toBe('user1');
+
+    const unauthorized = await request(app).get('/me');
+    expect(unauthorized.status).toBe(401);
+  });
+
   it('rejects requests without authentication', async () => {
     const res = await request(app)
       .post('/api/summarize')
@@ -48,6 +57,18 @@ describe('Server', () => {
     expect(page.status).toBe(200);
     expect(page.text).toContain('Summary Detail');
     expect(page.text).toContain('Another test document');
+  });
+
+  it('allows a user to delete a summary', async () => {
+    const created = await agent
+      .post('/api/summarize')
+      .send({ text: 'Summary to delete.' });
+    const id = created.body.id;
+    const del = await agent.delete(`/api/summaries/${id}`);
+    expect(del.status).toBe(200);
+    const list = await agent.get('/api/summaries');
+    const ids = list.body.summaries.map((s) => s.id);
+    expect(ids).not.toContain(id);
   });
 
   it('returns 400 if text is missing', async () => {

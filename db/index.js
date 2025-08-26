@@ -22,6 +22,10 @@ function findUserByUsername(username, cb) {
   db.get('SELECT id, password FROM users WHERE username = ?', [username], cb);
 }
 
+function getUserById(id, cb) {
+  db.get('SELECT id, username FROM users WHERE id = ?', [id], cb);
+}
+
 function insertSummary(userId, text, summary, cb) {
   db.run('INSERT INTO summaries (user_id, text, summary) VALUES (?, ?, ?)', [userId, text, summary], cb);
 }
@@ -34,10 +38,16 @@ function getSummaryById(id, userId, cb) {
   db.get('SELECT text, summary FROM summaries WHERE id = ? AND user_id = ?', [id, userId], cb);
 }
 
+function deleteSummary(id, userId, cb) {
+  db.run('DELETE FROM summaries WHERE id = ? AND user_id = ?', [id, userId], cb);
+}
+
 module.exports = {
   createUser,
   findUserByUsername,
+  getUserById,
   insertSummary,
   getSummaries,
   getSummaryById,
+  deleteSummary,
 };
