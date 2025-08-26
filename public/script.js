@@ -156,12 +156,18 @@ document.getElementById('summarize-btn').addEventListener('click', async () => {
       body: JSON.stringify({ text, images })
     });
     const data = await res.json();
-    summaryEl.innerHTML = (data.summary || 'No summary returned').replace(/\n/g, '<br>');
+    if (!res.ok) {
+      summaryEl.textContent = data.error || 'Error summarizing.';
+    } else if (!data.summary) {
+      summaryEl.textContent = 'No summary returned';
+    } else {
+      summaryEl.innerHTML = data.summary.replace(/\n/g, '<br>');
+      loadHistory();
+    }
   } catch (err) {
     summaryEl.textContent = 'Error';
   }
   requestAnimationFrame(() => summaryEl.classList.add('show'));
-  loadHistory();
 });
 
 window.addEventListener('load', loadHistory);
