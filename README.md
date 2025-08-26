@@ -13,6 +13,8 @@ The project now includes a Node.js backend with a SQLite database. Upload a PDF,
    PORT=3000
    DB_FILE=data.sqlite
    SESSION_SECRET=supersecret
+   # Optional: provide a Hugging Face key for higher quality summaries
+   # HF_API_KEY=your_key_here
    ```
 3. Start the development server:
    ```bash
@@ -27,6 +29,9 @@ The following variables are required:
 - `PORT` – Port number for the HTTP server.
 - `DB_FILE` – Path to the SQLite database file.
 - `SESSION_SECRET` – Secret used to sign the session ID cookie.
+- `HF_API_KEY` – (optional) Hugging Face Inference API key. If omitted, the server
+  falls back to a free Jina AI summarization API and, if external requests fail,
+  uses a simple built‑in algorithm to generate summaries.
 
 ## Testing
 
