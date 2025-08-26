@@ -6,16 +6,38 @@
   <title><%= title %></title>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/welcome.css" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
+  <div class="bar">
+    🚀 AI Study Helper makes studying easier <a href="#">Learn More</a>
+  </div>
+
+  <header class="nav" role="navigation" aria-label="Primary">
+    <div class="brand">
+      <div class="logo">A</div>
+      <div>AI Study Helper</div>
+    </div>
+
+    <nav class="nav-links" aria-label="Main">
+      <a href="#">Docs</a>
+      <a href="#">Pricing</a>
+      <a href="#">Resources</a>
+    </nav>
+
+    <div class="nav-cta">
+      <a class="btn primary" href="/summarize">Start Summarizing ✨</a>
+      <button class="btn secondary">Log in / Sign up</button>
+    </div>
+  </header>
   <main>
     <h1>AI Study Helper</h1>
 
     <section class="loader">
       <input type="file" id="pdf-input" accept="application/pdf" />
       <input type="url" id="wiki-input" placeholder="Wikipedia link" />
-      <button id="summarize-btn" class="btn">Summarize</button>
+      <button id="summarize-btn" class="btn primary">Summarize</button>
     </section>
 
     <section class="summary-section">
