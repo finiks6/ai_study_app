@@ -1,5 +1,10 @@
 const express = require('express');
-const { insertSummary, getSummaries, getSummaryById } = require('../db');
+const {
+  insertSummary,
+  getSummaries,
+  getSummaryById,
+  deleteSummary,
+} = require('../db');
 
 const router = express.Router();
 
@@ -152,6 +157,16 @@ router.get('/summaries/:id', requireAuth, (req, res) => {
     }
     const summaryHtml = row.summary.replace(/\n/g, '<br>');
     res.render('summary', { title: 'Summary Detail', text: row.text, summary: summaryHtml });
+  });
+});
+
+router.delete('/api/summaries/:id', requireAuth, (req, res) => {
+  const { id } = req.params;
+  deleteSummary(id, req.session.userId, (err) => {
+    if (err) {
+      return res.status(500).json({ error: 'Database error' });
+    }
+    res.json({ message: 'Deleted' });
   });
 });
 

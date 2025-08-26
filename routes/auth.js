@@ -1,6 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
-const { createUser, findUserByUsername } = require('../db');
+const { createUser, findUserByUsername, getUserById } = require('../db');
 
 const router = express.Router();
 
@@ -46,6 +46,18 @@ router.post('/logout', (req, res) => {
       return res.status(500).json({ error: 'Logout failed' });
     }
     res.json({ message: 'Logged out' });
+  });
+});
+
+router.get('/me', (req, res) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  getUserById(req.session.userId, (err, user) => {
+    if (err || !user) {
+      return res.status(500).json({ error: 'User not found' });
+    }
+    res.json({ id: user.id, username: user.username });
   });
 });
 
