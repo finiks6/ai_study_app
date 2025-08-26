@@ -11,9 +11,25 @@ function requireAuth(req, res, next) {
 }
 
 async function simpleSummarize(text) {
-  const apiKey = process.env.HF_API_KEY;
+  const hfKey = process.env.HF_API_KEY;
   const maxChunkSize = 4000; // characters
-  const fallback = (str) => str.split(/\s+/).slice(0, 50).join(' ');
+
+  function fallback(str) {
+    const sentences = str.match(/[^.!?]+[.!?]/g) || [str];
+    const words = str.toLowerCase().match(/\b[a-z]{3,}\b/g) || [];
+    const freq = {};
+    for (const w of words) freq[w] = (freq[w] || 0) + 1;
+    const scored = sentences.map((s) => {
+      const score = (s.toLowerCase().match(/\b[a-z]{3,}\b/g) || []).reduce(
+        (sum, w) => sum + (freq[w] || 0),
+        0
+      );
+      return { s: s.trim(), score };
+    });
+    scored.sort((a, b) => b.score - a.score);
+    const top = scored.slice(0, Math.min(3, scored.length)).map((o) => o.s);
+    return top.join(' ');
+  }
 
   function formatNotes(str) {
     const sentences = str.split(/(?<=[\.?!])\s+/).filter(Boolean);
@@ -26,48 +42,58 @@ async function simpleSummarize(text) {
     chunks.push(text.slice(i, i + maxChunkSize));
   }
 
-  // If no API key, simply fall back to crude truncation.
-  if (!apiKey) {
-    return formatNotes(chunks.map(fallback).join(' '));
-  }
-
   async function summarizeChunk(chunk) {
     try {
-      const response = await fetch(
-        'https://api-inference.huggingface.co/models/facebook/bart-large-cnn',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${apiKey}`,
-          },
-          body: JSON.stringify({ inputs: chunk, options: { wait_for_model: true } }),
+      if (hfKey) {
+        const response = await fetch(
+          'https://api-inference.huggingface.co/models/facebook/bart-large-cnn',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${hfKey}`,
+            },
+            body: JSON.stringify({ inputs: chunk, options: { wait_for_model: true } }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HF status ${response.status}`);
         }
-      );
-
-      if (!response.ok) {
-        throw new Error(`API response status: ${response.status}`);
+        const data = await response.json();
+        if (Array.isArray(data) && data[0]?.summary_text) {
+          return data[0].summary_text;
+        }
+        if (data.error) {
+          throw new Error(data.error);
+        }
+        return fallback(chunk);
       }
 
-      const data = await response.json();
-      if (Array.isArray(data) && data[0] && data[0].summary_text) {
-        return data[0].summary_text;
+      // Free API using Jina's summarizer. Returns plain text.
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      const resp = await fetch('https://r.jina.ai/http://', {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: chunk,
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      if (!resp.ok) {
+        throw new Error(`Jina status ${resp.status}`);
       }
-      if (data.error) {
-        throw new Error(data.error);
-      }
-      return fallback(chunk);
+      const txt = await resp.text();
+      return txt.trim() || fallback(chunk);
     } catch (err) {
       console.error('Summarization error:', err.message);
       return fallback(chunk);
     }
   }
 
-  // Summarize all chunks in parallel for speed.
   const summaries = await Promise.all(chunks.map(summarizeChunk));
   let combined = summaries.join(' ');
 
-  // Run a second pass to tighten the final summary if it's still long.
   if (combined.length > maxChunkSize) {
     try {
       combined = await summarizeChunk(combined);
