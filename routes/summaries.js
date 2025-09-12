@@ -343,7 +343,8 @@ router.post('/api/ads/impression', requireAuth, (req, res) => {
 });
 
 router.get('/api/ads/impressions', requireAuth, (req, res) => {
-  countAdImpressions(req.session.userId, (err, row) => {
+  const feature = req.query.feature;
+  countAdImpressions(req.session.userId, feature, (err, row) => {
     if (err) {
       return res.status(500).json({ error: 'Database error' });
     }

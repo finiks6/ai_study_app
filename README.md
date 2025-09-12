@@ -9,7 +9,8 @@ Summaries support follow-up study tools:
 - `POST /api/ask` answers questions about a saved summary and shows a short ad before responding.
 - `POST /api/flashcards` creates simple flashcards from a summary for quick review after displaying an ad.
 - `POST /api/ads/impression` records an ad view for the current user and feature.
-- `GET /api/ads/impressions` returns how many ads the user has seen.
+- `GET /api/ads/impressions` returns how many ads the user has seen. Optionally,
+  pass `?feature=name` to filter counts for a specific feature.
 
 ## Setup
 

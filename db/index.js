@@ -53,8 +53,25 @@ function insertAdImpression(userId, feature, cb) {
   db.run('INSERT INTO ad_impressions (user_id, feature) VALUES (?, ?)', [userId, feature], cb);
 }
 
-function countAdImpressions(userId, cb) {
-  db.get('SELECT COUNT(*) as count FROM ad_impressions WHERE user_id = ?', [userId], cb);
+function countAdImpressions(userId, feature, cb) {
+  if (typeof feature === 'function') {
+    cb = feature;
+    feature = null;
+  }
+
+  if (feature) {
+    db.get(
+      'SELECT COUNT(*) as count FROM ad_impressions WHERE user_id = ? AND feature = ?',
+      [userId, feature],
+      cb
+    );
+  } else {
+    db.get(
+      'SELECT COUNT(*) as count FROM ad_impressions WHERE user_id = ?',
+      [userId],
+      cb
+    );
+  }
 }
 
 function close(cb) {
