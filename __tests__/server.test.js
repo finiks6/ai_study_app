@@ -129,14 +129,26 @@ describe('Server', () => {
     expect(answers).toContain('paris');
   });
 
-  it('records ad impressions', async () => {
-    const res = await agent
-      .post('/api/ads/impression')
-      .send({ feature: 'test' });
-    expect(res.status).toBe(200);
-    const count = await agent.get('/api/ads/impressions');
-    expect(count.status).toBe(200);
-    expect(count.body.count).toBeGreaterThan(0);
+  it('records ad impressions and filters by feature', async () => {
+    const baseTotal = await agent.get('/api/ads/impressions');
+    const baseTest = await agent.get('/api/ads/impressions?feature=test');
+    const baseOther = await agent.get('/api/ads/impressions?feature=other');
+
+    await agent.post('/api/ads/impression').send({ feature: 'test' });
+    await agent.post('/api/ads/impression').send({ feature: 'other' });
+    await agent.post('/api/ads/impression').send({ feature: 'test' });
+
+    const total = await agent.get('/api/ads/impressions');
+    expect(total.status).toBe(200);
+    expect(total.body.count).toBe(baseTotal.body.count + 3);
+
+    const testCount = await agent.get('/api/ads/impressions?feature=test');
+    expect(testCount.status).toBe(200);
+    expect(testCount.body.count).toBe(baseTest.body.count + 2);
+
+    const otherCount = await agent.get('/api/ads/impressions?feature=other');
+    expect(otherCount.status).toBe(200);
+    expect(otherCount.body.count).toBe(baseOther.body.count + 1);
   });
 
   afterAll((done) => {
