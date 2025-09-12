@@ -99,5 +99,17 @@ describe('Server', () => {
     const list = await agent2.get('/api/summaries');
     expect(list.body.summaries.length).toBe(0);
   });
+
+  it('answers questions about a summary', async () => {
+    const created = await agent
+      .post('/api/summarize')
+      .send({ text: 'Paris is the capital of France.' });
+    const id = created.body.id;
+    const qa = await agent
+      .post('/api/ask')
+      .send({ id, question: 'What is the capital of France?' });
+    expect(qa.status).toBe(200);
+    expect(qa.body.answer.toLowerCase()).toContain('paris');
+  });
 });
 

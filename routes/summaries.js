@@ -110,6 +110,52 @@ async function simpleSummarize(text) {
   return formatNotes(combined);
 }
 
+async function answerQuestion(context, question) {
+  const hfKey = process.env.HF_API_KEY;
+
+  function fallbackQA(ctx, q) {
+    const sentences = ctx.split(/(?<=[\.?!])\s+/).filter(Boolean);
+    const qWords = q.toLowerCase().match(/\b[a-z]{3,}\b/g) || [];
+    let best = 'Answer not found.';
+    let bestScore = 0;
+    for (const s of sentences) {
+      let score = 0;
+      const lower = s.toLowerCase();
+      for (const w of qWords) if (lower.includes(w)) score++;
+      if (score > bestScore) {
+        bestScore = score;
+        best = s.trim();
+      }
+    }
+    return best;
+  }
+
+  if (hfKey) {
+    try {
+      const response = await fetch(
+        'https://api-inference.huggingface.co/models/deepset/roberta-base-squad2',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${hfKey}`,
+          },
+          body: JSON.stringify({ inputs: { question, context } }),
+        }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        if (data?.answer) {
+          return data.answer.trim();
+        }
+      }
+    } catch (err) {
+      console.error('QA error:', err.message);
+    }
+  }
+  return fallbackQA(context, question);
+}
+
 router.post('/api/summarize', requireAuth, async (req, res) => {
   const { text, images = [] } = req.body;
   if (!text) {
@@ -156,7 +202,7 @@ router.get('/summaries/:id', requireAuth, (req, res) => {
       return res.status(404).send('Not found');
     }
     const summaryHtml = row.summary.replace(/\n/g, '<br>');
-    res.render('summary', { title: 'Summary Detail', text: row.text, summary: summaryHtml });
+    res.render('summary', { title: 'Summary Detail', text: row.text, summary: summaryHtml, id });
   });
 });
 
@@ -167,6 +213,24 @@ router.delete('/api/summaries/:id', requireAuth, (req, res) => {
       return res.status(500).json({ error: 'Database error' });
     }
     res.json({ message: 'Deleted' });
+  });
+});
+
+router.post('/api/ask', requireAuth, (req, res) => {
+  const { id, question } = req.body;
+  if (!id || !question) {
+    return res.status(400).json({ error: 'id and question required' });
+  }
+  getSummaryById(id, req.session.userId, async (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: 'Database error' });
+    }
+    if (!row) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+    const context = row.summary.replace(/<[^>]+>/g, '');
+    const answer = await answerQuestion(context, question);
+    res.json({ answer });
   });
 });
 

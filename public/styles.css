@@ -105,3 +105,12 @@ h2 {
   margin-top: 0;
   color: var(--brand);
 }
+
+.ad-slot {
+  margin: 1rem 0;
+  padding: 1rem;
+  text-align: center;
+  background: #fef3c7;
+  border: 1px dashed #f59e0b;
+  color: #92400e;
+}
