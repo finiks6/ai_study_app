@@ -58,20 +58,13 @@ function countAdImpressions(userId, feature, cb) {
     cb = feature;
     feature = null;
   }
-
+  let query = 'SELECT COUNT(*) as count FROM ad_impressions WHERE user_id = ?';
+  const params = [userId];
   if (feature) {
-    db.get(
-      'SELECT COUNT(*) as count FROM ad_impressions WHERE user_id = ? AND feature = ?',
-      [userId, feature],
-      cb
-    );
-  } else {
-    db.get(
-      'SELECT COUNT(*) as count FROM ad_impressions WHERE user_id = ?',
-      [userId],
-      cb
-    );
+    query += ' AND feature = ?';
+    params.push(feature);
   }
+  db.get(query, params, cb);
 }
 
 function close(cb) {
