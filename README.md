@@ -4,6 +4,8 @@ The project now includes a Node.js backend with a SQLite database. Upload a PDF,
 
 Users can also fetch their account details via `GET /me` and manage saved summaries with `DELETE /api/summaries/:id`.
 
+The interface now includes a simple ad banner and in-browser login and sign-up forms, making the demo closer to a free, ad-supported study tool.
+
 ## Setup
 
 1. Install dependencies:

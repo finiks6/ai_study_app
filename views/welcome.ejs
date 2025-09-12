@@ -9,9 +9,7 @@
   <link rel="stylesheet" href="/welcome.css">
 </head>
 <body>
-  <div class="bar">
-    🚀 AI Study Helper makes studying easier <a href="#">Learn More</a>
-  </div>
+  <div class="bar" id="ad-banner">Loading ad...</div>
 
   <header class="nav" role="navigation" aria-label="Primary">
     <div class="brand">
@@ -27,7 +25,13 @@
 
     <div class="nav-cta">
       <a class="btn primary" href="/summarize">Start Summarizing ✨</a>
-      <button class="btn secondary">Log in / Sign up</button>
+      <div id="auth-form">
+        <input id="username" placeholder="Username" />
+        <input id="password" type="password" placeholder="Password" />
+        <button id="login-btn" class="btn secondary">Log in</button>
+        <button id="signup-btn" class="btn secondary">Sign up</button>
+      </div>
+      <button id="logout-btn" class="btn secondary" style="display:none">Log out</button>
     </div>
   </header>
 
@@ -56,5 +60,7 @@
     <h2>Create <em>Study Summaries</em> in Seconds</h2>
   </section>
   <script src="/cursor.js"></script>
+  <script src="/auth.js"></script>
+  <script src="/ad.js"></script>
   </body>
 </html>

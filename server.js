@@ -6,6 +6,7 @@ const session = require('express-session');
 require('./db');
 const authRoutes = require('./routes/auth');
 const summaryRoutes = require('./routes/summaries');
+const adRoutes = require('./routes/ads');
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.get('/summarize', (req, res) => {
 
 app.use(authRoutes);
 app.use(summaryRoutes);
+app.use(adRoutes);
 
 const port = process.env.PORT || 3000;
 if (require.main === module) {

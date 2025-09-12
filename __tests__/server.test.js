@@ -99,5 +99,11 @@ describe('Server', () => {
     const list = await agent2.get('/api/summaries');
     expect(list.body.summaries.length).toBe(0);
   });
+
+  it('serves advertisement content', async () => {
+    const res = await request(app).get('/api/ad');
+    expect(res.status).toBe(200);
+    expect(res.body.html).toBeDefined();
+  });
 });
 
