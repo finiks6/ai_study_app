@@ -4,6 +4,8 @@ const {
   getSummaries,
   getSummaryById,
   deleteSummary,
+  insertAdImpression,
+  countAdImpressions,
 } = require('../db');
 
 const router = express.Router();
@@ -13,6 +15,15 @@ function requireAuth(req, res, next) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   next();
+}
+
+function escapeHtml(str = '') {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 async function simpleSummarize(text) {
@@ -156,6 +167,69 @@ async function answerQuestion(context, question) {
   return fallbackQA(context, question);
 }
 
+async function generateFlashcards(text) {
+  const hfKey = process.env.HF_API_KEY;
+
+  function simpleFlashcards(str) {
+    str = str.replace(/^##\s*Summary\s*/i, '');
+    const sentences = str
+      .split(/(?<=[.!?])\s+|\n/)
+      .map((s) => s.replace(/^[-\s]+/, '').trim())
+      .filter(Boolean);
+    const cards = [];
+    for (const s of sentences.slice(0, 5)) {
+      const words = s.split(/\s+/);
+      let idx = words.findIndex((w) => w.replace(/[^a-zA-Z]/g, '').length > 4);
+      if (idx === -1) idx = 0;
+      const answer = words[idx].replace(/[^a-zA-Z0-9]/g, '');
+      const question = s.replace(words[idx], '_____');
+      cards.push({ question: question.trim(), answer });
+    }
+    return cards;
+  }
+
+  if (hfKey) {
+    try {
+      const response = await fetch(
+        'https://api-inference.huggingface.co/models/iarfmoose/t5-base-question-generator',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${hfKey}`,
+          },
+          body: JSON.stringify({ inputs: text }),
+        }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          const cards = data
+            .map((item) => {
+              const out = item.generated_text || item; // handle plain strings
+              if (typeof out === 'string') {
+                const parts = out.split('?');
+                if (parts.length >= 2) {
+                  return {
+                    question: parts[0].trim() + '?',
+                    answer: parts[1].trim(),
+                  };
+                }
+              }
+              return null;
+            })
+            .filter(Boolean);
+          if (cards.length) return cards;
+        }
+      }
+    } catch (err) {
+      console.error('Flashcard generation error:', err.message);
+    }
+  }
+
+  return simpleFlashcards(text);
+}
+
 router.post('/api/summarize', requireAuth, async (req, res) => {
   const { text, images = [] } = req.body;
   if (!text) {
@@ -170,8 +244,14 @@ router.post('/api/summarize', requireAuth, async (req, res) => {
     summary = text.split(/\s+/).slice(0, 50).join(' ');
   }
 
+  summary = escapeHtml(summary);
+
   if (Array.isArray(images) && images.length) {
-    const imgLines = images.map((img) => `- ${img.caption || 'Image'}\n<img src="${img.url}" alt="${img.caption || ''}" />`);
+    const imgLines = images.map((img) => {
+      const cap = escapeHtml(img.caption || 'Image');
+      const url = escapeHtml(img.url || '');
+      return `- ${cap}\n<img src="${url}" alt="${cap}" />`;
+    });
     summary = `${summary}\n${imgLines.join('\n')}`;
   }
 
@@ -231,6 +311,43 @@ router.post('/api/ask', requireAuth, (req, res) => {
     const context = row.summary.replace(/<[^>]+>/g, '');
     const answer = await answerQuestion(context, question);
     res.json({ answer });
+  });
+});
+
+router.post('/api/flashcards', requireAuth, (req, res) => {
+  const { id } = req.body;
+  if (!id) {
+    return res.status(400).json({ error: 'id required' });
+  }
+  getSummaryById(id, req.session.userId, async (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: 'Database error' });
+    }
+    if (!row) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+    const context = row.summary.replace(/<[^>]+>/g, '');
+    const flashcards = await generateFlashcards(context);
+    res.json({ flashcards });
+  });
+});
+
+router.post('/api/ads/impression', requireAuth, (req, res) => {
+  const { feature = 'general' } = req.body || {};
+  insertAdImpression(req.session.userId, feature, (err) => {
+    if (err) {
+      return res.status(500).json({ error: 'Database error' });
+    }
+    res.json({ ok: true });
+  });
+});
+
+router.get('/api/ads/impressions', requireAuth, (req, res) => {
+  countAdImpressions(req.session.userId, (err, row) => {
+    if (err) {
+      return res.status(500).json({ error: 'Database error' });
+    }
+    res.json({ count: row?.count || 0 });
   });
 });
 

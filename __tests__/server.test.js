@@ -3,6 +3,9 @@ jest.mock('../db', () => {
   const actual = jest.requireActual('../db');
   return { ...actual, insertSummary: jest.fn(actual.insertSummary) };
 });
+global.fetch = jest.fn(() =>
+  Promise.resolve({ ok: true, json: async () => ([]), text: async () => '' })
+);
 const app = require('../server');
 const db = require('../db');
 const realDb = jest.requireActual('../db');
@@ -98,6 +101,7 @@ describe('Server', () => {
     await agent2.post('/login').send({ username: 'user2', password: 'pass2' });
     const list = await agent2.get('/api/summaries');
     expect(list.body.summaries.length).toBe(0);
+    await new Promise((resolve) => agent2.app.close(resolve));
   });
 
   it('answers questions about a summary', async () => {
@@ -110,6 +114,33 @@ describe('Server', () => {
       .send({ id, question: 'What is the capital of France?' });
     expect(qa.status).toBe(200);
     expect(qa.body.answer.toLowerCase()).toContain('paris');
+  });
+
+  it('generates flashcards from a summary', async () => {
+    const created = await agent
+      .post('/api/summarize')
+      .send({ text: 'Paris is the capital of France.' });
+    const id = created.body.id;
+    const fc = await agent.post('/api/flashcards').send({ id });
+    expect(fc.status).toBe(200);
+    expect(Array.isArray(fc.body.flashcards)).toBe(true);
+    expect(fc.body.flashcards.length).toBeGreaterThan(0);
+    const answers = fc.body.flashcards.map((c) => c.answer.toLowerCase()).join(' ');
+    expect(answers).toContain('paris');
+  });
+
+  it('records ad impressions', async () => {
+    const res = await agent
+      .post('/api/ads/impression')
+      .send({ feature: 'test' });
+    expect(res.status).toBe(200);
+    const count = await agent.get('/api/ads/impressions');
+    expect(count.status).toBe(200);
+    expect(count.body.count).toBeGreaterThan(0);
+  });
+
+  afterAll((done) => {
+    agent.app.close(() => db.close(done));
   });
 });
 
