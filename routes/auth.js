@@ -27,16 +27,17 @@ router.post('/login', (req, res) => {
   if (!username || !password) {
     return res.status(400).json({ error: 'Username and password required' });
   }
-  findUserByUsername(username, async (err, user) => {
+  findUserByUsername(username, (err, user) => {
     if (err || !user) {
       return res.status(400).json({ error: 'Invalid credentials' });
     }
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) {
-      return res.status(400).json({ error: 'Invalid credentials' });
-    }
-    req.session.userId = user.id;
-    res.json({ message: 'Logged in' });
+    bcrypt.compare(password, user.password, (err, match) => {
+      if (err || !match) {
+        return res.status(400).json({ error: 'Invalid credentials' });
+      }
+      req.session.userId = user.id;
+      res.json({ message: 'Logged in' });
+    });
   });
 });
 
