@@ -44,11 +44,17 @@
       <div><%- summary %></div>
     </section>
 
-    <section class="qa-section">
-      <h2>Ask a question</h2>
-      <input type="text" id="question" placeholder="Ask about this summary" />
-      <button id="ask-btn" class="btn primary">Ask</button>
-      <div id="answer"></div>
+  <section class="qa-section">
+    <h2>Ask a question</h2>
+    <input type="text" id="question" placeholder="Ask about this summary" />
+    <button id="ask-btn" class="btn primary">Ask</button>
+    <div id="answer"></div>
+  </section>
+
+    <section class="flashcards-section">
+      <h2>Flashcards</h2>
+      <button id="flash-btn" class="btn primary">Generate Flashcards</button>
+      <ul id="flashcards"></ul>
     </section>
 
     <div class="ad-slot">Advertisement</div>
@@ -56,10 +62,12 @@
     <a href="/" class="btn secondary">Back to Home</a>
   </main>
   <script src="/cursor.js"></script>
+  <script src="/ad.js"></script>
   <script>
     document.getElementById('ask-btn').addEventListener('click', async () => {
       const q = document.getElementById('question').value.trim();
       if (!q) return;
+      await showAd('qa');
       const res = await fetch('/api/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -67,6 +75,23 @@
       });
       const data = await res.json();
       document.getElementById('answer').textContent = data.answer || data.error || 'No answer';
+    });
+
+    document.getElementById('flash-btn').addEventListener('click', async () => {
+      await showAd('flashcards');
+      const res = await fetch('/api/flashcards', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: <%= id %> })
+      });
+      const data = await res.json();
+      const list = document.getElementById('flashcards');
+      list.innerHTML = '';
+      (data.flashcards || []).forEach(card => {
+        const li = document.createElement('li');
+        li.innerHTML = `<strong>${card.question}</strong><br><em>${card.answer}</em>`;
+        list.appendChild(li);
+      });
     });
   </script>
 </body>

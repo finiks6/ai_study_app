@@ -4,6 +4,13 @@ The project now includes a Node.js backend with a SQLite database. Upload a PDF,
 
 Users can also fetch their account details via `GET /me` and manage saved summaries with `DELETE /api/summaries/:id`.
 
+Summaries support follow-up study tools:
+
+- `POST /api/ask` answers questions about a saved summary and shows a short ad before responding.
+- `POST /api/flashcards` creates simple flashcards from a summary for quick review after displaying an ad.
+- `POST /api/ads/impression` records an ad view for the current user and feature.
+- `GET /api/ads/impressions` returns how many ads the user has seen.
+
 ## Setup
 
 1. Install dependencies:

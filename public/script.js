@@ -70,29 +70,6 @@ async function fetchWikipedia(link) {
     return { text: '', images: [] };
   }
 }
-
-function showAd() {
-  return new Promise(resolve => {
-    const ad = document.createElement('div');
-    ad.textContent = 'Playing ad...';
-    ad.style.position = 'fixed';
-    ad.style.top = '0';
-    ad.style.left = '0';
-    ad.style.right = '0';
-    ad.style.bottom = '0';
-    ad.style.background = 'rgba(0,0,0,0.8)';
-    ad.style.color = 'white';
-    ad.style.display = 'flex';
-    ad.style.alignItems = 'center';
-    ad.style.justifyContent = 'center';
-    document.body.appendChild(ad);
-    setTimeout(() => {
-      document.body.removeChild(ad);
-      resolve();
-    }, 3000);
-  });
-}
-
 async function loadHistory() {
   const res = await fetch('/api/summaries');
   const data = await res.json();
@@ -139,7 +116,7 @@ document.getElementById('summarize-btn').addEventListener('click', async () => {
         summaryEl.textContent = 'Ad declined. Cannot summarize PDFs over 5 pages without watching it.';
         return;
       }
-      await showAd();
+      await showAd('long-pdf');
     }
     text = t;
     images = imgs;

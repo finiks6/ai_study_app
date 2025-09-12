@@ -12,6 +12,13 @@ db.serialize(() => {
     summary TEXT,
     FOREIGN KEY(user_id) REFERENCES users(id)
   )`);
+  db.run(`CREATE TABLE IF NOT EXISTS ad_impressions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    feature TEXT,
+    ts DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+  )`);
 });
 
 function createUser(username, password, cb) {
@@ -42,6 +49,18 @@ function deleteSummary(id, userId, cb) {
   db.run('DELETE FROM summaries WHERE id = ? AND user_id = ?', [id, userId], cb);
 }
 
+function insertAdImpression(userId, feature, cb) {
+  db.run('INSERT INTO ad_impressions (user_id, feature) VALUES (?, ?)', [userId, feature], cb);
+}
+
+function countAdImpressions(userId, cb) {
+  db.get('SELECT COUNT(*) as count FROM ad_impressions WHERE user_id = ?', [userId], cb);
+}
+
+function close(cb) {
+  db.close(cb);
+}
+
 module.exports = {
   createUser,
   findUserByUsername,
@@ -50,4 +69,7 @@ module.exports = {
   getSummaries,
   getSummaryById,
   deleteSummary,
+  insertAdImpression,
+  countAdImpressions,
+  close,
 };
