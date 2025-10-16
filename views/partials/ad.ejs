@@ -1,0 +1,15 @@
+<div class="ad-slot" style="min-height:90px; display:flex; align-items:center; justify-content:center; margin: 12px 0;">
+  <!-- Replace with your AdSense tag when approved -->
+  <div id="ad-placeholder">Ad</div>
+</div>
+<script>
+  (function () {
+    try {
+      fetch('/api/ads/impression', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ feature: '<%= feature || "generic" %>' })
+      }).catch(()=>{});
+    } catch (e) {}
+  })();
+</script>
